@@ -1,13 +1,251 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ok Let's LCH</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ok, let's LCH — Prototype</title>
+<link rel="stylesheet" href="./style.css">
+<style id="hueThumbStyle">
+  .hue-slider::-webkit-slider-thumb { background: #2a8f5c; }
+</style>
+</head>
+<body>
+
+<!-- Colour tooltip -->
+<div id="colorTip">
+  <div class="tip-swatch" id="tipSwatch"></div>
+  <div class="tip-label" id="tipStep"></div>
+  <div class="tip-row" id="tipL"></div>
+  <div class="tip-row" id="tipC"></div>
+  <div class="tip-row" id="tipH"></div>
+  <div class="tip-hex-row">
+    <span class="tip-hex" id="tipHex"></span>
+    <span class="tip-hint" id="tipHint">click to copy</span>
+  </div>
+</div>
+
+<!-- OKLCH modal -->
+<div id="oklchModal" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div id="modalBox">
+    <div id="modalHeader">
+      <span id="modalTitle">// what is oklch?</span>
+      <button id="modalClose" onclick="closeModal()">✕ close</button>
+    </div>
+    <div id="modalBody">
+      <div class="m-section">
+        <div class="m-label">// the problem with hsl</div>
+        <p class="m-text">HSL is the colour model most designers learned first. It describes colour with three values: hue (the colour), saturation (how vivid), and lightness (how bright). But its lightness is a lie. A yellow at HSL 50% lightness looks far brighter than a blue at HSL 50% lightness. The numbers say they're equal — your eyes say otherwise.</p>
+        <p class="m-text">This means that when you build a scale in HSL, visually pairing colours across that scale — say, using a step-400 blue next to a step-400 yellow — produces combinations that feel unbalanced even when the values match. You end up nudging by eye every time.</p>
+      </div>
+
+      <div class="m-section">
+        <div class="m-label">// what oklch fixes</div>
+        <p class="m-text">OKLCH is a perceptually uniform colour space. Its L axis (lightness) is calibrated to how human vision actually works — so L 0.58 in a green and L 0.58 in a purple genuinely appear equally bright to the eye. Same number, same perception.</p>
+        <p class="m-text">This has a practical consequence: when you set a rule like "all interactive elements use step 500", every colour in your palette at step 500 will feel visually consistent in weight, regardless of hue. No more manual nudging.</p>
+      </div>
+
+      <div class="m-section">
+        <div class="m-label">// the three axes</div>
+        <div class="m-grid">
+          <div class="m-axis">
+            <div class="m-axis-head">L — lightness</div>
+            <p class="m-text">Runs from 0 (absolute black) to 1 (absolute white). Perceptually linear — each step feels like an equal jump in brightness. Step 50 in this tool sits at L ≈ 0.995, step 900 at L ≈ 0.10.</p>
+          </div>
+          <div class="m-axis">
+            <div class="m-axis-head">C — chroma</div>
+            <p class="m-text">How vivid or saturated the colour is. 0 is a neutral grey. Higher values are more vivid. Unlike HSL saturation, chroma is absolute — C 0.18 means the same vividness regardless of hue or lightness.</p>
+          </div>
+          <div class="m-axis">
+            <div class="m-axis-head">H — hue</div>
+            <p class="m-text">The angle on the colour wheel, 0°–360°. But unlike HSL, equal angular distances in OKLCH correspond to genuinely equal perceptual distances. Complementary colours are truly complementary.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="m-section">
+        <div class="m-label">// how this tool uses oklch</div>
+        <p class="m-text">You pick a primary colour by setting H, C, and L — or by typing any hex code. The tool converts that hex to OKLCH to extract its true hue and chroma, then builds a 10-step scale by walking L from near-white (0.995) to near-black (0.10), keeping H constant and tapering C near the extremes so the lightest step approaches white and the darkest approaches black.</p>
+        <p class="m-text">Secondary colours are derived by rotating H by a fixed angle (30°, 120°, or 180°) while keeping C and the same L stops — so they're harmonically related and visually equal in weight at every step. Status colours (danger, warning, success, info) use canonical hues that shift slightly if your primary is too close, so they always read as distinct.</p>
+        <p class="m-text">The result is a palette where any two colours at the same step number are genuinely comparable in brightness — a property you simply cannot guarantee in HSL.</p>
+      </div>
+
+      <div class="m-section">
+        <div class="m-label">// browser support</div>
+        <p class="m-text">The <code>oklch()</code> CSS function is supported in all modern browsers as of 2023 — Chrome 111+, Firefox 113+, Safari 15.4+. For older environments, the exported CSS includes hex fallback values on every line. The Tailwind and Figma exports use hex throughout.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export modal -->
+<div id="exportModal" style="display:none;" onclick="if(event.target===this)closeExportModal()">
+  <div id="modalBox">
+    <div id="modalHeader">
+      <span id="modalTitle">// export palette</span>
+      <button id="modalClose" onclick="closeExportModal()">✕ close</button>
+    </div>
+    <div id="modalBody" style="gap:12px;">
+      <div class="m-section">
+        <p class="m-text" style="color:var(--text3);">Choose a format. All exports include every scale — primary, secondary, neutral, and status colours.</p>
+      </div>
+
+      <button class="export-opt" onclick="exportCSS();closeExportModal()">
+        <div class="export-opt-head">CSS custom properties</div>
+        <div class="export-opt-desc">A <code>:root {}</code> block with <code>--color-primary-500</code> style tokens. Includes native <code>oklch()</code> values and hex fallbacks as comments. Drop into any web project.</div>
+      </button>
+
+      <button class="export-opt" onclick="exportJSON();closeExportModal()">
+        <div class="export-opt-head">JSON tokens</div>
+        <div class="export-opt-desc">Structured token object with <code>oklch</code>, <code>hex</code>, <code>l</code>, <code>c</code>, and <code>h</code> per step. Compatible with Style Dictionary and other token pipelines.</div>
+      </button>
+
+      <button class="export-opt" onclick="exportTailwind();closeExportModal()">
+        <div class="export-opt-head">Tailwind config</div>
+        <div class="export-opt-desc">A <code>colors: {}</code> object ready to paste into <code>tailwind.config.js</code> under <code>theme.extend</code>. Hex values with oklch as comments.</div>
+      </button>
+
+      <button class="export-opt" onclick="exportFigma();closeExportModal()">
+        <div class="export-opt-head">Figma variables</div>
+        <div class="export-opt-desc">JSON in Figma's Variables API format, grouped as <code>Primary/500</code>, <code>Status/Danger/400</code> etc. Import via the Figma Variables plugin.</div>
+      </button>
+
+      <button class="export-opt" onclick="exportSVG();closeExportModal()">
+        <div class="export-opt-head">SVG palette sheet</div>
+        <div class="export-opt-desc">A visual document of all scales as labelled colour chips. Drop into Notion, slides, or a handoff doc for stakeholder reference.</div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="topbar">
+    <div class="logo">Ok, let's <em>LCH</em></div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button class="seg-btn-solo" onclick="openModal()">? oklch</button>
+      <button class="seg-btn-solo" onclick="openExportModal()">↓ export</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="ctrl-label">// primary</div>
+        <div class="ctrl-group" style="margin-top:8px;">
+          <div class="slider-row">
+            <div class="swatch" id="mainSwatch" style="width:90px;flex:none;height:26px;">
+              <input id="swatchHex" type="text" value="#—"
+                style="background:transparent;border:none;outline:none;
+                  font-family:'Courier New',monospace;font-size:0.8125rem;
+                  width:100%;cursor:text;letter-spacing:.06em;"
+                maxlength="7"
+                oninput="onHexInput(this.value)"
+                onkeydown="if(event.key==='Enter')onHexCommit(this.value)"
+                onblur="onHexCommit(this.value)"
+                spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="slider-row" id="anchorBadge" style="margin-top:-2px;">
+            <span class="slider-label"></span>
+            <div style="display:flex;align-items:center;gap:5px;flex:1;">
+              <div class="hex-anchor-dot" id="anchorDot"></div>
+              <span class="hex-anchor-badge" id="anchorText" style="margin:0;padding:0;">hex is step 500</span>
+            </div>
+          </div>
+
+          <div class="slider-row">
+            <span class="slider-label">H</span>
+            <div class="slider-track-wrap">
+              <input type="range" class="hue-slider full-track" id="sHue" min="0" max="359" value="165" oninput="go()">
+            </div>
+            <span class="slider-ext-val" id="vHue">165°</span>
+          </div>
+
+          <div class="slider-row">
+            <span class="slider-label">C</span>
+            <div class="slider-track-wrap">
+              <input type="range" class="full-track" id="sChroma" min="3" max="28" value="17" oninput="go()">
+            </div>
+            <span class="slider-ext-val" id="vChroma">0.17</span>
+          </div>
+
+          <div class="slider-row">
+            <span class="slider-label">L</span>
+            <div class="slider-track-wrap">
+              <input type="range" class="full-track" id="sLight" min="40" max="75" value="58" oninput="hexAnchorL=null;go()">
+            </div>
+            <span class="slider-ext-val" id="vLight">0.58</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="ctrl-label">// secondary</div>
+        <div class="sec-opts" style="margin-top:8px;" id="secOpts"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="ctrl-label">// neutral tint</div>
+        <div class="seg" style="margin-top:8px;">
+          <button id="nt0" class="on" onclick="setNt(0)">none</button>
+          <button id="nt1" onclick="setNt(1)">subtle</button>
+          <button id="nt2" onclick="setNt(2)">visible</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="ctrl-label">// preview</div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+          <div class="seg">
+            <button class="on" id="pvLt" onclick="setPv('light')">light</button>
+            <button id="pvDk" onclick="setPv('dark')">dark</button>
+          </div>
+          <div class="seg">
+            <button class="on" id="pvDe" onclick="setDev('desktop')">desktop</button>
+            <button id="pvMo" onclick="setDev('mobile')">mobile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div>
+        <div class="sec-head">// primary scale</div>
+        <div class="strip" id="stripPrimary" style="height:48px;"></div>
+      </div>
+
+      <div>
+        <div class="sec-head">// secondary scale</div>
+        <div class="strip" id="stripSecondary" style="height:48px;"></div>
+      </div>
+
+      <div>
+        <div class="sec-head">// neutral scale</div>
+        <div class="strip" id="stripNeutral" style="height:48px;"></div>
+      </div>
+
+      <div>
+        <div class="sec-head">// status colours</div>
+        <div class="sem-grid" id="semGrid"></div>
+      </div>
+
+      <hr>
+
+      <div>
+        <div class="sec-head">// ui preview — <span id="pvLabel">light · desktop</span></div>
+        <div class="preview-card">
+          <div class="preview-top">
+            <span>Mid-fidelity mockup · colours update live</span>
+          </div>
+          <div class="preview-body">
+            <div id="uiFrame"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./main.js"></script>
+</body>
 </html>
