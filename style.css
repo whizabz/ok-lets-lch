@@ -142,11 +142,19 @@ body {
   font-family: var(--mono);
   font-size: 0.75rem;
   color: var(--text2);
-  width: 34px;
+  width: 38px;
   flex-shrink: 0;
-  text-align: right;
-  padding-left: 6px;
+  text-align: center;
+  padding: 2px 4px;
+  margin-left: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  outline: none;
+  cursor: text;
+  transition: border-color 0.1s, color 0.1s;
 }
+.slider-ext-val:hover { color: var(--text); border-color: var(--text3); }
+.slider-ext-val:focus { color: var(--text); border-color: var(--accent); }
 .track-val {
   position: absolute;
   right: 6px;

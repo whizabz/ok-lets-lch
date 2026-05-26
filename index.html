@@ -89,6 +89,11 @@
         <p class="m-text" style="color:var(--text3);">Choose a format. All exports include every scale — primary, secondary, neutral, and status colours.</p>
       </div>
 
+      <button class="export-opt" onclick="exportSemanticCSS();closeExportModal()">
+        <div class="export-opt-head">Semantic tokens — light &amp; dark</div>
+        <div class="export-opt-desc">A <code>:root {}</code> and <code>.dark {}</code> block with role-based tokens — <code>--color-background</code>, <code>--color-text</code>, <code>--color-brand</code>, status pairs, etc. Ready to use directly in a UI without referencing raw scale steps.</div>
+      </button>
+
       <button class="export-opt" onclick="exportCSS();closeExportModal()">
         <div class="export-opt-head">CSS custom properties</div>
         <div class="export-opt-desc">A <code>:root {}</code> block with <code>--color-primary-500</code> style tokens. Includes native <code>oklch()</code> values and hex fallbacks as comments. Drop into any web project.</div>
@@ -158,7 +163,7 @@
             <div class="slider-track-wrap">
               <input type="range" class="hue-slider full-track" id="sHue" min="0" max="359" value="165" oninput="go()">
             </div>
-            <span class="slider-ext-val" id="vHue">165°</span>
+            <input type="text" class="slider-ext-val" id="vHue" value="165°" maxlength="4" spellcheck="false" onfocus="this.select()" onkeydown="if(event.key==='Enter'){commitH(this.value);this.blur()}" onblur="commitH(this.value)">
           </div>
 
           <div class="slider-row">
@@ -166,7 +171,7 @@
             <div class="slider-track-wrap">
               <input type="range" class="full-track" id="sChroma" min="3" max="28" value="17" oninput="go()">
             </div>
-            <span class="slider-ext-val" id="vChroma">0.17</span>
+            <input type="text" class="slider-ext-val" id="vChroma" value="0.17" maxlength="4" spellcheck="false" onfocus="this.select()" onkeydown="if(event.key==='Enter'){commitC(this.value);this.blur()}" onblur="commitC(this.value)">
           </div>
 
           <div class="slider-row">
@@ -174,7 +179,7 @@
             <div class="slider-track-wrap">
               <input type="range" class="full-track" id="sLight" min="40" max="75" value="58" oninput="hexAnchorL=null;go()">
             </div>
-            <span class="slider-ext-val" id="vLight">0.58</span>
+            <input type="text" class="slider-ext-val" id="vLight" value="0.58" maxlength="4" spellcheck="false" onfocus="this.select()" onkeydown="if(event.key==='Enter'){commitL(this.value);this.blur()}" onblur="commitL(this.value)">
           </div>
         </div>
       </div>

@@ -157,32 +157,82 @@ function renderSecOpts() {
   }).join('');
 }
 
+function buildSemanticTokens() {
+  const dynL = dynamicStops(Lv);
+  const nc = [0, 0.012, 0.028][nt];
+  const nh = nt > 0 ? H : 0;
+  const n = dynL.map(l => toHex(l, taperedC(l, nc), nh));
+  const p = dynL.map(l => toHex(l, taperedC(l, C), H));
+  const dH=adjH(22,28), wH=adjH(78,28), sH=adjH(145,28), iH=adjH(248,28);
+
+  // surface sits halfway between step 50 and step 100 for a subtler elevation
+  const neu = l => toHex(l, taperedC(l, nc), nh);
+  const surfLightL = (dynL[0] + dynL[1]) / 2;
+
+  const light = {
+    background:      n[0],              // neutral-50
+    surface:         neu(surfLightL),   // midpoint 50→100
+    border:          n[1],              // neutral-100 (was 200)
+    text:            n[9],  // neutral-900
+    textSecondary:   n[6],  // neutral-600
+    textMuted:       n[4],  // neutral-400
+    brand:           p[5],  // primary-500
+    brandFg:         fg(p[5]),
+    brandSubtle:     p[1],  // primary-100
+    brandSubtleText: p[7],  // primary-700
+    brandHover:      p[6],  // primary-600
+    dangerBg:    toHex(0.95, 0.09, dH),  dangerText:  toHex(0.38, 0.22, dH),
+    warningBg:   toHex(0.95, 0.08, wH),  warningText: toHex(0.40, 0.18, wH),
+    successBg:   toHex(0.95, 0.08, sH),  successText: toHex(0.36, 0.20, sH),
+    infoBg:      toHex(0.95, 0.07, iH),  infoText:    toHex(0.36, 0.18, iH),
+  };
+
+  const dark = {
+    background:      n[9],  // neutral-900
+    surface:         n[8],  // neutral-800
+    border:          n[7],  // neutral-700
+    text:            n[0],  // neutral-50
+    textSecondary:   n[3],  // neutral-300
+    textMuted:       n[5],  // neutral-500
+    brand:           p[5],  // primary-500 (same)
+    brandFg:         fg(p[5]),
+    brandSubtle:     p[8],  // primary-800
+    brandSubtleText: p[2],  // primary-200
+    brandHover:      p[4],  // primary-400
+    dangerBg:    toHex(0.18, 0.12, dH),  dangerText:  toHex(0.78, 0.22, dH),
+    warningBg:   toHex(0.18, 0.10, wH),  warningText: toHex(0.76, 0.18, wH),
+    successBg:   toHex(0.18, 0.10, sH),  successText: toHex(0.80, 0.20, sH),
+    infoBg:      toHex(0.18, 0.09, iH),  infoText:    toHex(0.78, 0.18, iH),
+  };
+
+  return { light, dark };
+}
+
 function renderPreview() {
   const dark = pv==='dark', mob = dev==='mobile';
+  const sem = buildSemanticTokens();
+  const tok = dark ? sem.dark : sem.light;
   const dynL = dynamicStops(Lv);
-  const p = l => toHex(l, taperedC(l, C), H);
-  const p50=p(dynL[0]), p100=p(dynL[1]), p300=p(dynL[3]), p500=p(dynL[5]);
+  const pr = i => toHex(dynL[i], taperedC(dynL[i], C), H);
 
-  const nc=[0,0.012,0.028][nt], nh=nt>0?H:0;
-  const dH=adjH(22,28), sH=adjH(145,28), wH=adjH(78,28), iH=adjH(248,28);
+  const dangerFg  = tok.dangerText;
+  const dangerBg  = tok.dangerBg;
+  const successFg = tok.successText;
+  const successBg = tok.successBg;
+  const warnFg    = tok.warningText;
+  const warnBg    = tok.warningBg;
 
-  const dangerFg = toHex(dark?.78:.40, 0.22, dH);
-  const dangerBg = toHex(dark?.22:.95, 0.09, dH);
-  const successFg= toHex(dark?.80:.38, 0.20, sH);
-  const successBg= toHex(dark?.22:.95, 0.08, sH);
-  const warnFg   = toHex(dark?.76:.40, 0.18, wH);
-  const warnBg   = toHex(dark?.22:.95, 0.08, wH);
-
-  const bg      = dark ? toHex(.12,nc,nh) : '#f8f7f4';
-  const surf    = dark ? toHex(.17,nc,nh) : '#ffffff';
-  const brd     = dark ? 'rgba(255,255,255,.09)' : 'rgba(0,0,0,.09)';
-  const txt     = dark ? toHex(.94,nc,nh) : toHex(.12,nc,nh);
-  const txt2    = dark ? toHex(.62,nc,nh) : '#6b6a65';
-  const txt3    = dark ? toHex(.40,nc,nh) : '#a0a09a';
-  const prim    = p500;
-  const primXL  = dark ? toHex(.22,C*.4,H) : p50;
-  const primL   = dark ? toHex(.26,C*.35,H): p100;
-  const primFg  = fg(p500);
+  const bg    = tok.background;
+  const surf  = tok.surface;
+  const brd   = tok.border;
+  const txt   = tok.text;
+  const txt2  = tok.textSecondary;
+  const txt3  = tok.textMuted;
+  const prim  = tok.brand;
+  const primXL = dark ? toHex(dynL[8], taperedC(dynL[8], C * 0.4), H) : pr(0);
+  const primL  = dark ? toHex(dynL[7], taperedC(dynL[7], C * 0.35), H) : pr(1);
+  const primFg = tok.brandFg;
+  const p300   = pr(3);
 
   document.getElementById('uiFrame').className = mob?'mob':'';
   document.getElementById('pvLabel').textContent =
@@ -204,13 +254,11 @@ function renderPreview() {
   const navItems = ['Dashboard','Analytics','Projects','Reports','Settings'];
   const navHTML = navItems.map((n,i) => {
     const active = i===1;
-    return `<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;
       border-radius:7px;cursor:pointer;margin-bottom:2px;
       background:${active ? primXL : 'transparent'};
       color:${active ? prim : txt2};font-weight:${active?'600':'400'};font-size:12px;">
-      <div style="width:14px;height:14px;border-radius:3px;
-        background:${active ? primL : 'transparent'};
-        border:1.5px solid ${active ? prim : 'transparent'};flex-shrink:0;"></div>
+      <div style="width:3px;height:14px;border-radius:2px;background:${active ? prim : 'transparent'};flex-shrink:0;"></div>
       ${n}
     </div>`;
   }).join('');
@@ -236,9 +284,8 @@ function renderPreview() {
 
   const desktopLayout = `
 <div style="display:flex;height:100%;background:${bg};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;color:${txt};min-height:480px;">
-  <div style="width:180px;flex-shrink:0;background:${surf};border-right:1px solid ${brd};display:flex;flex-direction:column;padding:16px 10px;">
+  <div style="width:180px;flex-shrink:0;background:${bg};border-right:1px solid ${brd};display:flex;flex-direction:column;padding:16px 10px;">
     <div style="font-weight:700;font-size:14px;color:${txt};padding:4px 10px;margin-bottom:20px;">Acme <span style="color:${prim}">HQ</span></div>
-    <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${txt3};padding:0 10px;margin-bottom:6px;">Main menu</div>
     ${navHTML}
     <div style="flex:1;"></div>
     <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid ${brd};margin-top:8px;">
@@ -250,7 +297,7 @@ function renderPreview() {
     </div>
   </div>
   <div style="flex:1;overflow:auto;display:flex;flex-direction:column;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:48px;background:${surf};border-bottom:1px solid ${brd};flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:48px;background:${bg};border-bottom:1px solid ${brd};flex-shrink:0;">
       <div>
         <div style="font-size:14px;font-weight:700;color:${txt};">Analytics</div>
         <div style="font-size:10px;color:${txt2};">Overview · Last 30 days</div>
@@ -524,6 +571,73 @@ function buildPalette() {
   };
 }
 
+function exportSemanticCSS() {
+  const { light, dark } = buildSemanticTokens();
+  const lines = [
+    "/* Generated by Ok, let's LCH — Semantic Tokens */",
+    "/* Pair with palette.css for the full token system */",
+    '',
+    ':root {',
+    '  /* surfaces */',
+    `  --color-background:         ${light.background};`,
+    `  --color-surface:            ${light.surface};`,
+    `  --color-border:             ${light.border};`,
+    '',
+    '  /* text */',
+    `  --color-text:               ${light.text};`,
+    `  --color-text-secondary:     ${light.textSecondary};`,
+    `  --color-text-muted:         ${light.textMuted};`,
+    '',
+    '  /* brand */',
+    `  --color-brand:              ${light.brand};`,
+    `  --color-brand-fg:           ${light.brandFg};`,
+    `  --color-brand-subtle:       ${light.brandSubtle};`,
+    `  --color-brand-subtle-text:  ${light.brandSubtleText};`,
+    `  --color-brand-hover:        ${light.brandHover};`,
+    '',
+    '  /* status */',
+    `  --color-danger-bg:          ${light.dangerBg};`,
+    `  --color-danger-text:        ${light.dangerText};`,
+    `  --color-warning-bg:         ${light.warningBg};`,
+    `  --color-warning-text:       ${light.warningText};`,
+    `  --color-success-bg:         ${light.successBg};`,
+    `  --color-success-text:       ${light.successText};`,
+    `  --color-info-bg:            ${light.infoBg};`,
+    `  --color-info-text:          ${light.infoText};`,
+    '}',
+    '',
+    '.dark {',
+    '  /* surfaces */',
+    `  --color-background:         ${dark.background};`,
+    `  --color-surface:            ${dark.surface};`,
+    `  --color-border:             ${dark.border};`,
+    '',
+    '  /* text */',
+    `  --color-text:               ${dark.text};`,
+    `  --color-text-secondary:     ${dark.textSecondary};`,
+    `  --color-text-muted:         ${dark.textMuted};`,
+    '',
+    '  /* brand */',
+    `  --color-brand:              ${dark.brand};`,
+    `  --color-brand-fg:           ${dark.brandFg};`,
+    `  --color-brand-subtle:       ${dark.brandSubtle};`,
+    `  --color-brand-subtle-text:  ${dark.brandSubtleText};`,
+    `  --color-brand-hover:        ${dark.brandHover};`,
+    '',
+    '  /* status */',
+    `  --color-danger-bg:          ${dark.dangerBg};`,
+    `  --color-danger-text:        ${dark.dangerText};`,
+    `  --color-warning-bg:         ${dark.warningBg};`,
+    `  --color-warning-text:       ${dark.warningText};`,
+    `  --color-success-bg:         ${dark.successBg};`,
+    `  --color-success-text:       ${dark.successText};`,
+    `  --color-info-bg:            ${dark.infoBg};`,
+    `  --color-info-text:          ${dark.infoText};`,
+    '}',
+  ];
+  downloadFile('semantic-tokens.css', lines.join('\n'), 'text/css');
+}
+
 function exportCSS() {
   const p = buildPalette();
   const lines = ["/* Generated by Ok, let's LCH */", "/* oklch() native; hex as fallback */", '', ':root {'];
@@ -646,9 +760,12 @@ function go() {
   C  = parseInt(document.getElementById('sChroma').value)/100;
   Lv = parseInt(document.getElementById('sLight').value)/100;
 
-  document.getElementById('vHue').textContent    = H + '°';
-  document.getElementById('vChroma').textContent = C.toFixed(2);
-  document.getElementById('vLight').textContent  = Lv.toFixed(2);
+  const vHue = document.getElementById('vHue');
+  if (document.activeElement !== vHue) vHue.value = H + '°';
+  const vChroma = document.getElementById('vChroma');
+  if (document.activeElement !== vChroma) vChroma.value = C.toFixed(2);
+  const vLight = document.getElementById('vLight');
+  if (document.activeElement !== vLight) vLight.value = Lv.toFixed(2);
 
   const base = toHex(Lv, C, H);
   const f    = fg(base);
@@ -686,6 +803,29 @@ function go() {
   renderSemantic();
   renderSecOpts();
   renderPreview();
+}
+
+function commitH(val) {
+  const v = parseInt(val);
+  if (isNaN(v)) { document.getElementById('vHue').value = H + '°'; return; }
+  H = ((v % 360) + 360) % 360;
+  document.getElementById('sHue').value = H;
+  go();
+}
+function commitC(val) {
+  const v = parseFloat(val);
+  if (isNaN(v)) { document.getElementById('vChroma').value = C.toFixed(2); return; }
+  C = Math.min(0.28, Math.max(0.03, v));
+  document.getElementById('sChroma').value = Math.round(C * 100);
+  go();
+}
+function commitL(val) {
+  const v = parseFloat(val);
+  if (isNaN(v)) { document.getElementById('vLight').value = Lv.toFixed(2); return; }
+  hexAnchorL = null;
+  Lv = Math.min(0.75, Math.max(0.40, v));
+  document.getElementById('sLight').value = Math.round(Lv * 100);
+  go();
 }
 
 function pickSec(i) { si=i; go(); }
