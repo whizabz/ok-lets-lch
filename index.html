@@ -89,10 +89,15 @@
         <p class="m-text" style="color:var(--text3);">Choose a format. All exports include every scale — primary, secondary, neutral, and status colours.</p>
       </div>
 
-      <button class="export-opt" onclick="exportSemanticCSS();closeExportModal()">
-        <div class="export-opt-head">Semantic tokens — light &amp; dark</div>
-        <div class="export-opt-desc">A <code>:root {}</code> and <code>.dark {}</code> block with role-based tokens — <code>--color-background</code>, <code>--color-text</code>, <code>--color-brand</code>, status pairs, etc. Ready to use directly in a UI without referencing raw scale steps.</div>
-      </button>
+      <div class="export-opt export-opt-multi">
+        <div class="export-opt-head">Semantic tokens</div>
+        <div class="export-opt-desc">Role-based tokens — <code>--color-background</code>, <code>--color-text</code>, <code>--color-brand</code>, status pairs, etc. Ready to use directly in a UI without referencing raw scale steps.</div>
+        <div class="export-opt-actions">
+          <button onclick="exportSemanticCSS('both');closeExportModal()">both</button>
+          <button onclick="exportSemanticCSS('light');closeExportModal()">light</button>
+          <button onclick="exportSemanticCSS('dark');closeExportModal()">dark</button>
+        </div>
+      </div>
 
       <button class="export-opt" onclick="exportCSS();closeExportModal()">
         <div class="export-opt-head">CSS custom properties</div>

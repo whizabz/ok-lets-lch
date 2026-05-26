@@ -359,6 +359,25 @@ hr { border:none; border-top:1px solid var(--border); }
   gap: 5px;
 }
 .export-opt:hover { background: var(--tint); border-color: var(--accent); }
+.export-opt-multi { cursor: default; }
+.export-opt-multi:hover { background: var(--surface2); border-color: var(--border); }
+.export-opt-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.export-opt-actions button {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  letter-spacing: .03em;
+  transition: all .1s;
+}
+.export-opt-actions button:hover { background: var(--tint); border-color: var(--accent); color: var(--accent); }
 .export-opt-head {
   font-size: 0.8125rem;
   font-weight: 700;
