@@ -345,6 +345,30 @@ hr { border:none; border-top:1px solid var(--border); }
   font-weight: 700; color: var(--accent);
 }
 
+.modal-tab-bar {
+  display: flex;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-tab {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text3);
+  cursor: pointer;
+  letter-spacing: .03em;
+  margin-bottom: -1px;
+  transition: color .1s, border-color .1s;
+}
+.modal-tab:hover { color: var(--text2); }
+.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.modal-panel { display: none; flex-direction: column; gap: 24px; }
+.modal-panel.active { display: flex; }
+
 .export-opt {
   width: 100%;
   text-align: left;

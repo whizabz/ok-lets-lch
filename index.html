@@ -24,55 +24,101 @@
   </div>
 </div>
 
-<!-- OKLCH modal -->
+<!-- Learn modal -->
 <div id="oklchModal" style="display:none;" onclick="if(event.target===this)closeModal()">
   <div id="modalBox">
-    <div id="modalHeader">
-      <span id="modalTitle">// what is oklch?</span>
+    <div id="modalHeader" style="border-bottom:none;">
+      <span id="modalTitle">// learn</span>
       <button id="modalClose" onclick="closeModal()">✕ close</button>
     </div>
+    <div class="modal-tab-bar">
+      <button class="modal-tab active" onclick="switchTab('oklch')">oklch</button>
+      <button class="modal-tab" onclick="switchTab('6030')">60-30-10 rule</button>
+    </div>
     <div id="modalBody">
-      <div class="m-section">
-        <div class="m-label">// the problem with hsl</div>
-        <p class="m-text">HSL is the colour model most designers learned first. It describes colour with three values: hue (the colour), saturation (how vivid), and lightness (how bright). But its lightness is a lie. A yellow at HSL 50% lightness looks far brighter than a blue at HSL 50% lightness. The numbers say they're equal — your eyes say otherwise.</p>
-        <p class="m-text">This means that when you build a scale in HSL, visually pairing colours across that scale — say, using a step-400 blue next to a step-400 yellow — produces combinations that feel unbalanced even when the values match. You end up nudging by eye every time.</p>
-      </div>
 
-      <div class="m-section">
-        <div class="m-label">// what oklch fixes</div>
-        <p class="m-text">OKLCH is a perceptually uniform colour space. Its L axis (lightness) is calibrated to how human vision actually works — so L 0.58 in a green and L 0.58 in a purple genuinely appear equally bright to the eye. Same number, same perception.</p>
-        <p class="m-text">This has a practical consequence: when you set a rule like "all interactive elements use step 500", every colour in your palette at step 500 will feel visually consistent in weight, regardless of hue. No more manual nudging.</p>
-      </div>
+      <div class="modal-panel active" id="tab-oklch">
+        <div class="m-section">
+          <div class="m-label">// the problem with hsl</div>
+          <p class="m-text">HSL is the colour model most designers learned first. Three values: hue, saturation, lightness. The lightness part doesn't work the way you'd expect. A yellow at 50% lightness looks far brighter than a blue at 50% lightness — same number, different result.</p>
+          <p class="m-text">Build a scale in HSL, try to pair a step-400 blue with a step-400 yellow, and something feels off even though the values match. You end up fixing it by eye, every time.</p>
+        </div>
 
-      <div class="m-section">
-        <div class="m-label">// the three axes</div>
-        <div class="m-grid">
-          <div class="m-axis">
-            <div class="m-axis-head">L — lightness</div>
-            <p class="m-text">Runs from 0 (absolute black) to 1 (absolute white). Perceptually linear — each step feels like an equal jump in brightness. Step 50 in this tool sits at L ≈ 0.995, step 900 at L ≈ 0.10.</p>
+        <div class="m-section">
+          <div class="m-label">// what oklch fixes</div>
+          <p class="m-text">OKLCH's L axis is calibrated to human vision, not math. L 0.58 in green and L 0.58 in purple will look the same brightness to your eye. Actually the same, not approximately.</p>
+          <p class="m-text">If your rule is "interactive elements use step 500", every colour in your palette at step 500 carries the same visual weight. That's not a guarantee you can make in HSL.</p>
+        </div>
+
+        <div class="m-section">
+          <div class="m-label">// the three axes</div>
+          <div class="m-grid">
+            <div class="m-axis">
+              <div class="m-axis-head">L — lightness</div>
+              <p class="m-text">0 is black, 1 is white. Each increment feels like an equal jump in brightness because it is one. Step 50 sits at L ≈ 0.995, step 900 at L ≈ 0.10.</p>
+            </div>
+            <div class="m-axis">
+              <div class="m-axis-head">C — chroma</div>
+              <p class="m-text">How vivid the colour is. 0 is grey. Unlike HSL saturation, chroma is absolute — C 0.18 means the same vividness at any hue or lightness.</p>
+            </div>
+            <div class="m-axis">
+              <div class="m-axis-head">H — hue</div>
+              <p class="m-text">The angle around the colour wheel, 0°–360°. Equal angular steps here map to equal perceptual steps. Complementary colours actually look complementary.</p>
+            </div>
           </div>
-          <div class="m-axis">
-            <div class="m-axis-head">C — chroma</div>
-            <p class="m-text">How vivid or saturated the colour is. 0 is a neutral grey. Higher values are more vivid. Unlike HSL saturation, chroma is absolute — C 0.18 means the same vividness regardless of hue or lightness.</p>
-          </div>
-          <div class="m-axis">
-            <div class="m-axis-head">H — hue</div>
-            <p class="m-text">The angle on the colour wheel, 0°–360°. But unlike HSL, equal angular distances in OKLCH correspond to genuinely equal perceptual distances. Complementary colours are truly complementary.</p>
-          </div>
+        </div>
+
+        <div class="m-section">
+          <div class="m-label">// how this tool works</div>
+          <p class="m-text">Set H, C, and L with the sliders, or type a hex. When you type hex, the tool converts it to OKLCH, pulls out the hue and chroma, then builds a 10-step scale by walking L from near-white (0.995) down to near-black (0.10). Chroma tapers near the extremes — without that, step 50 would look like a vivid tint rather than near-white.</p>
+          <p class="m-text">Secondary colours rotate H by a fixed angle (30°, 120°, or 180°) while keeping C and the same L stops. Status colours use fixed canonical hues that shift slightly when your primary is close — so danger always reads as danger.</p>
+          <p class="m-text">Any two colours at the same step number will be genuinely comparable in brightness. That's the thing you can't reliably do in HSL.</p>
+        </div>
+
+        <div class="m-section">
+          <div class="m-label">// browser support</div>
+          <p class="m-text"><code>oklch()</code> works in Chrome 111+, Firefox 113+, Safari 15.4+. The CSS export includes hex fallbacks on every line for anything older. Tailwind and Figma exports use hex throughout.</p>
         </div>
       </div>
 
-      <div class="m-section">
-        <div class="m-label">// how this tool uses oklch</div>
-        <p class="m-text">You pick a primary colour by setting H, C, and L — or by typing any hex code. The tool converts that hex to OKLCH to extract its true hue and chroma, then builds a 10-step scale by walking L from near-white (0.995) to near-black (0.10), keeping H constant and tapering C near the extremes so the lightest step approaches white and the darkest approaches black.</p>
-        <p class="m-text">Secondary colours are derived by rotating H by a fixed angle (30°, 120°, or 180°) while keeping C and the same L stops — so they're harmonically related and visually equal in weight at every step. Status colours (danger, warning, success, info) use canonical hues that shift slightly if your primary is too close, so they always read as distinct.</p>
-        <p class="m-text">The result is a palette where any two colours at the same step number are genuinely comparable in brightness — a property you simply cannot guarantee in HSL.</p>
+      <div class="modal-panel" id="tab-6030">
+        <div class="m-section">
+          <div class="m-label">// the rule</div>
+          <p class="m-text">Most designers think of their brand colour as "the primary colour." In the 60-30-10 rule, it's actually the 10%.</p>
+          <p class="m-text">The rule splits screen space into three buckets. 60% is the dominant colour — backgrounds, surfaces, cards. 30% is structure — text, navigation, borders, secondary UI. 10% is the accent — buttons, links, active states, anything that needs to catch the eye. That 10% is where your brand colour lives.</p>
+        </div>
+
+        <div class="m-section">
+          <div class="m-label">// why scarcity matters</div>
+          <p class="m-text">The accent works because it's rare. If your brand colour is everywhere, nothing stands out. The 10% is what gives a button its weight — the eye notices it because almost nothing else on screen is that colour.</p>
+          <p class="m-text">A mostly neutral interface with one vivid colour tends to feel more deliberate than a colourful one. Less is doing more.</p>
+        </div>
+
+        <div class="m-section">
+          <div class="m-label">// how it maps to this palette</div>
+          <div class="m-grid">
+            <div class="m-axis">
+              <div class="m-axis-head">60% — neutral scale</div>
+              <p class="m-text">Backgrounds, surfaces, cards, dividers. Steps 50–200 in light mode. Steps 700–900 in dark mode. Most of what the user sees.</p>
+            </div>
+            <div class="m-axis">
+              <div class="m-axis-head">30% — primary mid</div>
+              <p class="m-text">Steps 400–700 of your primary scale. Text hierarchy, navigation, structural elements. Enough presence to carry content without competing with the accent.</p>
+            </div>
+            <div class="m-axis">
+              <div class="m-axis-head">10% — primary accent</div>
+              <p class="m-text">Steps 500–600. Buttons, links, active states, focus rings. Use these sparingly — that's what makes them work.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-section">
+          <div class="m-label">// what about the secondary colour?</div>
+          <p class="m-text">For most apps, you don't need it. The three buckets above cover the vast majority of UI decisions.</p>
+          <p class="m-text">A second brand hue makes sense in specific situations: charts with multiple data series, multi-product platforms where each product has its own colour identity, or marketing surfaces where expression matters more than functional clarity. If none of those apply to what you're building, start without it. Add it when you have a real reason, not just because the option is there.</p>
+        </div>
       </div>
 
-      <div class="m-section">
-        <div class="m-label">// browser support</div>
-        <p class="m-text">The <code>oklch()</code> CSS function is supported in all modern browsers as of 2023 — Chrome 111+, Firefox 113+, Safari 15.4+. For older environments, the exported CSS includes hex fallback values on every line. The Tailwind and Figma exports use hex throughout.</p>
-      </div>
     </div>
   </div>
 </div>
@@ -131,7 +177,7 @@
   <div class="topbar">
     <div class="logo">Ok, let's <em>LCH</em></div>
     <div style="display:flex;align-items:center;gap:6px;">
-      <button class="seg-btn-solo" onclick="openModal()">? oklch</button>
+      <button class="seg-btn-solo" onclick="openModal()">? learn</button>
       <button class="seg-btn-solo" onclick="openExportModal()">↓ export</button>
     </div>
   </div>

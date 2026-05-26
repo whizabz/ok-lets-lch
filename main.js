@@ -525,6 +525,15 @@ function chipClick(hex) {
     });
 }
 
+function switchTab(id) {
+  document.querySelectorAll('.modal-tab').forEach((t, i) => {
+    const tabId = i === 0 ? 'oklch' : '6030';
+    t.classList.toggle('active', tabId === id);
+  });
+  document.querySelectorAll('.modal-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + id);
+  });
+}
 function openModal() { document.getElementById('oklchModal').style.display = 'flex'; }
 function closeModal() { document.getElementById('oklchModal').style.display = 'none'; }
 function openExportModal() { document.getElementById('exportModal').style.display = 'flex'; }
